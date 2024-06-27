@@ -1,5 +1,9 @@
-package Model
+package models
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class Properties(
 
     val mag: Double,
@@ -30,4 +34,4 @@ data class Properties(
     val types: String,
     val tz: Any,
     */
-)
+) : Parcelable

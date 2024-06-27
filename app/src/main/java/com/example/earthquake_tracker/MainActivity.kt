@@ -1,6 +1,7 @@
 package com.example.earthquake_tracker
 
-import Model.Feature
+import models.Feature
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
@@ -9,9 +10,12 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import db.TerremotoDataBase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import models.Terremoto
+import models.toTerremoto
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -20,9 +24,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var buttonMonth: Button
     private lateinit var buttonWeek: Button
     private lateinit var buttonDay: Button
-
+    private lateinit var buttonViewFavs: Button
+    private lateinit var database: TerremotoDataBase
     private lateinit var adapter: Adapter
-    private var quakesList = mutableListOf<Feature>()
+    private var quakesList = mutableListOf<Terremoto>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -32,7 +37,7 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
+        database=db.getDataBase(this)
         recyclerView=findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         adapter = Adapter()
@@ -52,6 +57,17 @@ class MainActivity : AppCompatActivity() {
             getQuakesDay()
         }
 
+        adapter.onItemClickListener={
+            val intent= Intent(this,DetailActivity::class.java)
+            intent.putExtra("quake",it)
+            startActivity(intent)
+        }
+
+        buttonViewFavs=findViewById(R.id.buttonShowFavs)
+        buttonViewFavs.setOnClickListener{
+            getFavs()
+        }
+
     }
 
     private fun getQuakesMonth() {
@@ -61,9 +77,13 @@ class MainActivity : AppCompatActivity() {
 
             runOnUiThread{
                 if (call.isSuccessful) {
+
                     val quakes = response?.features ?: emptyList()
+                    val listado = quakes.map {
+                        it.toTerremoto()
+                    }
                     quakesList.clear()
-                    quakesList.addAll(quakes)
+                    quakesList.addAll(listado)
                     adapter.notifyDataSetChanged()
                 }
             }
@@ -78,8 +98,11 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread{
                 if (call.isSuccessful) {
                     val quakes = response?.features ?: emptyList()
+                    val listado = quakes.map {
+                        it.toTerremoto()
+                    }
                     quakesList.clear()
-                    quakesList.addAll(quakes)
+                    quakesList.addAll(listado)
                     adapter.notifyDataSetChanged()
                 }
             }
@@ -94,14 +117,27 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread{
                 if (call.isSuccessful) {
                     val quakes = response?.features ?: emptyList()
+                    val listado = quakes.map {
+                        it.toTerremoto()
+                    }
                     quakesList.clear()
-                    quakesList.addAll(quakes)
+                    quakesList.addAll(listado)
                     adapter.notifyDataSetChanged()
                 }
             }
         }
     }
 
+    private fun getFavs(){
+        CoroutineScope(Dispatchers.IO).launch {
+            val list =database.terremotoDao.getAllTerremotos()
+            runOnUiThread{
+                quakesList.clear()
+                quakesList.addAll(list)
+                adapter.notifyDataSetChanged()
+            }
+        }
+    }
 
     private fun getRetrofit(): Retrofit {
         return Retrofit.Builder()

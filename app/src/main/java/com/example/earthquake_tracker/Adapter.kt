@@ -1,6 +1,5 @@
 package com.example.earthquake_tracker
-import Model.Feature
-import Model.Quakes
+import models.Feature
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,19 +7,20 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import models.Terremoto
 
 
-class Adapter() : ListAdapter<Feature, Adapter.ViewHolder>(DiffCallBack) {
+class Adapter() : ListAdapter<Terremoto, Adapter.ViewHolder>(DiffCallBack) {
 
-    lateinit var onItemClickListener: (Feature) -> Unit
+    lateinit var onItemClickListener: (Terremoto) -> Unit
 
     inner class ViewHolder(private val view: View) : RecyclerView.ViewHolder(view) {
         val nombreElem: TextView = view.findViewById(R.id.nameView)
         val magElem: TextView = view.findViewById(R.id.magnitudeView)
 
-        fun bind (quake: Feature) {
-            nombreElem.text=quake.properties.title
-            magElem.text=quake.properties.mag.toString()
+        fun bind (quake: Terremoto) {
+            nombreElem.text=quake.title
+            magElem.text=quake.mag
 
             view.setOnClickListener{
                 onItemClickListener(quake)
@@ -40,12 +40,12 @@ class Adapter() : ListAdapter<Feature, Adapter.ViewHolder>(DiffCallBack) {
         holder.bind(quake)
     }
 
-    companion object DiffCallBack : DiffUtil.ItemCallback<Feature>() {
-        override fun areItemsTheSame(oldItem: Feature, newItem: Feature): Boolean {
+    companion object DiffCallBack : DiffUtil.ItemCallback<Terremoto>() {
+        override fun areItemsTheSame(oldItem: Terremoto, newItem: Terremoto): Boolean {
             return  oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: Feature, newItem: Feature): Boolean {
+        override fun areContentsTheSame(oldItem: Terremoto, newItem: Terremoto): Boolean {
             return oldItem == newItem
         }
     }
